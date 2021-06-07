@@ -152,6 +152,8 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
+let isInitail = true;
+
 const Home = () => {
   const classes = useStyles();
   const dispatch = useDispatch();
@@ -165,8 +167,11 @@ const Home = () => {
 
   useEffect(() => {
     window.scroll(0, 0);
-    setIsLoading(true);
-    dispatch(getRecipes(1, stopLoading));
+    if (isInitail) {
+      setIsLoading(true);
+      dispatch(getRecipes(1, stopLoading));
+      isInitail = false;
+    }
   }, [dispatch]);
 
   const navigateHandler = () => {

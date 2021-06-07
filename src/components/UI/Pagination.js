@@ -20,22 +20,24 @@ const Paginate = ({ page, startLoading, stopLoading, isLoading }) => {
   }, [dispatch, page, startLoading, stopLoading]);
 
   return !isLoading ? (
-    <Paper elevation={4} className={classes.paginate}>
-      <Pagination
-        classes={{ ul: classes.ul }}
-        count={totalPages}
-        page={Number(page) || 1}
-        variant="outlined"
-        color="primary"
-        renderItem={(item) => (
-          <PaginationItem
-            {...item}
-            component={Link}
-            to={`/recipes?page=${item.page}`}
-          />
-        )}
-      />
-    </Paper>
+    <div className={classes.paginationConatiner}>
+      <Paper elevation={4} className={classes.paginate}>
+        <Pagination
+          classes={{ ul: classes.ul }}
+          count={totalPages}
+          page={Number(page) || 1}
+          variant="outlined"
+          color="primary"
+          renderItem={(item) => (
+            <PaginationItem
+              {...item}
+              component={Link}
+              to={`/recipes?page=${item.page}`}
+            />
+          )}
+        />
+      </Paper>
+    </div>
   ) : null;
 };
 

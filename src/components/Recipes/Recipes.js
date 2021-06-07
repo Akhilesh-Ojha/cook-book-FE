@@ -86,7 +86,7 @@ const Recipes = () => {
         `/recipes/search?searchQuery=${search || ""}&tags=${tags.join(",")}`
       );
     } else {
-      history.push(`/recipes?page=${page}`);
+      history.push("/recipes");
     }
   };
 
@@ -105,14 +105,18 @@ const Recipes = () => {
   const handleRemove = (tagToDelete) =>
     setTags(tags.filter((tag) => tag !== tagToDelete));
 
-  const getBookMarkedRecipesOfUser = async () => {
+  const getBookMarkedRecipesOfUser = useCallback(async () => {
     const { data } = await getUser();
     setBookMarkedRecipesOfUser(data.bookMarkedRecipes);
-  };
+  }, []);
 
   useEffect(() => {
-    getBookMarkedRecipesOfUser();
-  }, []);
+    if (userId) {
+      getBookMarkedRecipesOfUser();
+    } else {
+      setBookMarkedRecipesOfUser([]);
+    }
+  }, [getBookMarkedRecipesOfUser, userId]);
 
   return (
     <Box>
