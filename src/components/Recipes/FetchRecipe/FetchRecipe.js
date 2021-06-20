@@ -4,12 +4,18 @@ import {
   Typography,
   Grid,
   ListItemText,
+  Divider,
+  GridList,
+  GridListTileBar,
+  GridListTile,
 } from "@material-ui/core";
 import React, { useEffect, useState, useCallback } from "react";
 import { useParams } from "react-router-dom";
 import { fetchRecipe } from "../../../api/index";
 import { makeStyles } from "@material-ui/core/styles";
 import List from "@material-ui/core/List";
+import { useDispatch, useSelector } from "react-redux";
+import { getRecipesBySearch } from "../../../actions/recipes";
 import ListItem from "@material-ui/core/ListItem";
 import FiberManualRecordIcon from "@material-ui/icons/FiberManualRecord";
 import CircularProgress from "@material-ui/core/CircularProgress";
@@ -37,7 +43,6 @@ const useStyles = makeStyles((theme) => ({
     margin: "0",
     fontSize: "50px",
     lineHeight: "60px",
-    // fontWeight: "100 !important",
     fontWeight: "normal",
   },
   imageContainer: {
@@ -52,13 +57,12 @@ const useStyles = makeStyles((theme) => ({
   },
   recipe: {
     marginTop: 30,
-    height: "100vh",
+    height: "auto",
     width: "70%",
   },
   ingredients: {
     display: "flex",
     flexDirection: "column",
-    // justifyContent: "center",
     alignItems: "flex-start",
     marginRight: "10",
   },
@@ -97,44 +101,78 @@ const useStyles = makeStyles((theme) => ({
     alignItems: "center",
     height: "100vh",
   },
-  // listText: {
-  //   fontSize: "18px !important",
-  //   position:
-  // },
+
+  mainGrid: {
+    marginTop: 40,
+    minWidth: "100vw",
+    height: "400px",
+  },
+
+  gridRoot: {
+    display: "flex",
+    flexWrap: "wrap",
+    justifyContent: "space-around",
+    overflow: "hidden",
+    backgroundColor: theme.palette.background.paper,
+  },
+  gridList: {
+    flexWrap: "nowrap",
+    transform: "translateZ(0)",
+  },
+
+  titleBar: {
+    background:
+      "linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.3) 70%, rgba(0,0,0,0) 100%)",
+  },
 }));
 
 const FetchRecipe = () => {
   const params = useParams();
   const classes = useStyles();
   const [recipe, setRecipeData] = useState(null);
-  const productId = params?.id;
+  const recipeId = params?.id;
   const [isLoading, setLoading] = useState(false);
+  const dispatch = useDispatch();
+
+  const { recipes } = useSelector((state) => state.recipes.recipes);
 
   const fetchRecipeHandler = useCallback(() => {
     setLoading(true);
 
-    fetchRecipe(productId).then((data) => {
+    fetchRecipe(recipeId).then((data) => {
       setRecipeData({
         name: data.data.name,
         description: data.data.description,
         ingredients: data.data.ingredients,
         tags: data.data.tags,
         serves: data.data.serves,
-        image: data.data.image,
+        image: data.data.image.url,
       });
       setLoading(false);
     });
-  }, [productId]);
+  }, [recipeId]);
+
+  const stopLoading = () => {
+    setLoading(false);
+  };
 
   useEffect(() => {
     window.scroll(0, 0);
     fetchRecipeHandler();
-  }, [productId, fetchRecipeHandler]);
+  }, [recipeId, fetchRecipeHandler]);
 
-  console.log("recipe", recipe);
+  useEffect(() => {
+    if (recipe) {
+      dispatch(
+        getRecipesBySearch(
+          { search: "none", tags: recipe.tags.join(",") },
+          stopLoading
+        )
+      );
+    }
+  }, [recipe, dispatch]);
+
   return (
-    // <React.Fragment>
-    // {/* <h3 className={classes.title}>{recipe?.name}</h3> */}
     <React.Fragment>
       {isLoading && (
         <div className={classes.circularProgress}>
@@ -175,7 +213,7 @@ const FetchRecipe = () => {
                 <List>
                   {recipe?.ingredients.map((ing) => {
                     return (
-                      <ListItem>
+                      <ListItem key={ing._id}>
                         <FiberManualRecordIcon className={classes.icon} />
                         <ListItemText>
                           <Typography className={classes.listText} variant="h6">
@@ -197,7 +235,7 @@ const FetchRecipe = () => {
                 <List>
                   {recipe?.description.map((method, index) => {
                     return (
-                      <ListItem className={classes.list}>
+                      <ListItem className={classes.list} key={method._id}>
                         <div className={classes.number}>{index + 1}</div>
 
                         <div className={classes.vertical}></div>
@@ -214,6 +252,26 @@ const FetchRecipe = () => {
               </Grid>
             </Grid>
           </Container>
+          <Divider variant="middle" />
+          {recipes && (
+            <Container className={classes.mainGrid}>
+              <div className={classes.gridRoot}>
+                <GridList className={classes.gridList} cols={2.5}>
+                  {recipes.map((tile) => (
+                    <GridListTile key={tile._id} style={{ height: "400px" }}>
+                      <img src={tile.image.url} alt={tile.name} />
+                      <GridListTileBar
+                        title={tile.name}
+                        classes={{
+                          root: classes.titleBar,
+                        }}
+                      />
+                    </GridListTile>
+                  ))}
+                </GridList>
+              </div>
+            </Container>
+          )}
         </div>
       )}
     </React.Fragment>

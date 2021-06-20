@@ -1,16 +1,18 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { Container, Grid, Box, TextField, Button } from "@material-ui/core";
+import { Container, Grid, Box } from "@material-ui/core";
 import { useDispatch, useSelector } from "react-redux";
-import { getRecipesBySearch } from "../../actions/recipes";
+import { getRecipesBySearch, getRecipes } from "../../actions/recipes";
 import Recipe from "./Recipe/Recipe";
 import { makeStyles } from "@material-ui/core/styles";
 import RecipeHeroImage from "../../assets/RecipeHero.jpg";
 // import SearchIcon from "@material-ui/icons/Search";
-import CircularProgress from "@material-ui/core/CircularProgress";
+// import CircularProgress from "@material-ui/core/CircularProgress";
 import Paginate from "../UI/Pagination";
-import ChipInput from "material-ui-chip-input";
+// import ChipInput from "material-ui-chip-input";
 import { getUser } from "../../api/index";
 import { useHistory, useLocation } from "react-router-dom";
+import SearchBar from "material-ui-search-bar";
+import Skeleton from "@material-ui/lab/Skeleton";
 
 const useStyles = makeStyles((theme) => ({
   container: {
@@ -28,7 +30,7 @@ const useStyles = makeStyles((theme) => ({
     backgroundRepeat: "no-repeat",
   },
   search: {
-    // position: "relative",
+    marginTop: 120,
     marginBottom: "30px",
     display: "flex",
     justifyContent: "flex-start",
@@ -36,7 +38,8 @@ const useStyles = makeStyles((theme) => ({
   },
 
   searchField: {
-    marginRight: 20,
+    width: "100%",
+    // boxShadow: "5px 5px 5px 5px rgba(0, 0, 0, 0.15)",
   },
 
   loading: {
@@ -47,7 +50,6 @@ const useStyles = makeStyles((theme) => ({
   paginate: {
     marginTop: 40,
     padding: 20,
-    // width: "50%",
   },
 }));
 
@@ -78,6 +80,7 @@ const Recipes = () => {
 
   const searchRecipe = () => {
     if (search.trim().length > 0 || tags.length > 0) {
+      console.log("Here 1");
       startLoading();
       dispatch(
         getRecipesBySearch({ search, tags: tags.join(",") }, stopLoading)
@@ -86,7 +89,8 @@ const Recipes = () => {
         `/recipes/search?searchQuery=${search || ""}&tags=${tags.join(",")}`
       );
     } else {
-      history.push("/recipes");
+      dispatch(getRecipes(page, stopLoading));
+      history.push(`/recipes`);
     }
   };
 
@@ -97,13 +101,21 @@ const Recipes = () => {
   };
 
   const onSearchHandler = (event) => {
-    setSearch(event.target.value);
+    // console.log(event);
+    // setSearch(event.target.value);
+    setSearch(event);
   };
 
-  const handleAdd = (tag) => setTags([...tags, tag.toLowerCase()]);
+  const onCancelSearch = (event) => {
+    setSearch("");
+    dispatch(getRecipes(page, stopLoading));
+    history.push(`/recipes`);
+  };
 
-  const handleRemove = (tagToDelete) =>
-    setTags(tags.filter((tag) => tag !== tagToDelete));
+  // const handleAdd = (tag) => setTags([...tags, tag.toLowerCase()]);
+
+  // const handleRemove = (tagToDelete) =>
+  //   setTags(tags.filter((tag) => tag !== tagToDelete));
 
   const getBookMarkedRecipesOfUser = useCallback(async () => {
     const { data } = await getUser();
@@ -120,10 +132,10 @@ const Recipes = () => {
 
   return (
     <Box>
-      <div className={classes.recipeHeroImage} alt="recipeList" />
+      {/* <div className={classes.recipeHeroImage} alt="recipeList" /> */}
       <Container className={classes.container}>
         <div className={classes.search}>
-          <TextField
+          <SearchBar
             className={classes.searchField}
             label="Search for a Recipe"
             variant="outlined"
@@ -131,8 +143,19 @@ const Recipes = () => {
             value={search}
             onKeyPress={handleKeyPress}
             onChange={onSearchHandler}
-          ></TextField>
-          <ChipInput
+            onCancelSearch={onCancelSearch}
+            // onRequestSearch={() => console.log("onRequestSearch")}
+          />
+          {/* <TextField
+            className={classes.searchField}
+            label="Search for a Recipe"
+            variant="outlined"
+            fullWidth
+            value={search}
+            onKeyPress={handleKeyPress}
+            onChange={onSearchHandler}
+          ></TextField> */}
+          {/* <ChipInput
             className={classes.searchField}
             label="Search Tags"
             variant="outlined"
@@ -140,16 +163,47 @@ const Recipes = () => {
             value={tags}
             onAdd={handleAdd}
             onDelete={handleRemove}
-          />
-          <Button variant="contained" onClick={searchRecipe} color="primary">
+          /> */}
+          {/* <Button variant="contained" onClick={searchRecipe} color="primary">
             Search
-          </Button>
+          </Button> */}
         </div>
 
         {isLoading && (
-          <div className={classes.loading}>
-            <CircularProgress />
-          </div>
+          // <div className={classes.loading}>
+          //   <CircularProgress />
+          // </div>
+          <React.Fragment>
+            <Grid container spacing={3}>
+              <Grid item xs={12} md={4}>
+                <Skeleton
+                  variant="rect"
+                  // className={classes.skeleton}
+                  animation="wave"
+                  width={400}
+                  height={400}
+                />
+              </Grid>
+              <Grid item xs={12} md={4}>
+                <Skeleton
+                  variant="rect"
+                  // className={classes.skeleton}
+                  animation="wave"
+                  width={400}
+                  height={400}
+                />
+              </Grid>
+              <Grid item xs={12} md={4}>
+                <Skeleton
+                  variant="rect"
+                  // className={classes.skeleton}
+                  animation="wave"
+                  width={400}
+                  height={400}
+                />
+              </Grid>
+            </Grid>
+          </React.Fragment>
         )}
         {!isLoading && bookMarkedRecipesOfUser && (
           <React.Fragment>
@@ -176,7 +230,7 @@ const Recipes = () => {
         )}
 
         <Paginate
-          page={page}
+          page={+page}
           isLoading={isLoading}
           startLoading={startLoading}
           stopLoading={stopLoading}

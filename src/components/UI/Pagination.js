@@ -13,6 +13,7 @@ const Paginate = ({ page, startLoading, stopLoading, isLoading }) => {
 
   useEffect(() => {
     window.scroll(0, 0);
+    console.log("Here in pagination", page);
     if (page) {
       startLoading();
       dispatch(getRecipes(page, stopLoading));

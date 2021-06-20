@@ -152,7 +152,7 @@ const Recipe = ({
   return (
     <Grid item xs={12} md={4}>
       <Card className={classes.root} raised elevation={5}>
-        <CardMedia className={classes.media} image={image} title={name} />
+        <CardMedia className={classes.media} image={image.url} title={name} />
         <CardHeader
           title={
             <Link to={`recipes/${id}`}>

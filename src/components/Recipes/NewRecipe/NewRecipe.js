@@ -13,7 +13,7 @@ import {
 import { makeStyles } from "@material-ui/core/styles";
 import { useDispatch, useSelector } from "react-redux";
 import { addRecipe, updateRecipe } from "../../../actions/recipes";
-import FileBase from "react-file-base64";
+// import FileBase from "react-file-base64";
 import { useHistory, useParams } from "react-router-dom";
 import AddIcon from "@material-ui/icons/Add";
 import nextId from "react-id-generator";
@@ -65,6 +65,7 @@ const NewRecipe = (props) => {
   const dispatch = useDispatch();
   const history = useHistory();
   const params = useParams();
+  const [selectedFile, setSelectedFile] = useState(null);
 
   const [isLoading, setIsLoading] = useState(false);
   const [recipeData, setRecipeData] = useState({
@@ -77,7 +78,6 @@ const NewRecipe = (props) => {
         amount: "",
       },
     ],
-    image: "",
     serves: "",
     tags: "",
   });
@@ -166,13 +166,17 @@ const NewRecipe = (props) => {
 
   const onFormSubmitHandler = async (event) => {
     event.preventDefault();
+    const formData = new FormData();
+    formData.append("image", selectedFile);
+    formData.append("data", JSON.stringify(recipeData));
+
     const formBody = { recipeData };
     if (editProductId) {
       setIsLoading(true);
       dispatch(updateRecipe(editProductId, formBody.recipeData, history));
     } else {
       setIsLoading(true);
-      dispatch(addRecipe(formBody.recipeData, history));
+      dispatch(addRecipe(formData, history));
     }
     setRecipeData({
       name: "",
@@ -189,10 +193,14 @@ const NewRecipe = (props) => {
           amount: "",
         },
       ],
-      image: "",
       serves: "",
       tags: "",
     });
+    setSelectedFile(null);
+  };
+
+  const setImageHandler = (e) => {
+    setSelectedFile(e.target.files[0]);
   };
 
   return (
@@ -215,7 +223,11 @@ const NewRecipe = (props) => {
             {editProductId ? "Edit" : "Create"} Your Recipe
           </Typography>
 
-          <form className={classes.form} onSubmit={onFormSubmitHandler}>
+          <form
+            className={classes.form}
+            encType="multipart/form-data"
+            onSubmit={onFormSubmitHandler}
+          >
             <Grid container spacing={5}>
               <Grid item xs={12} md={6}>
                 <Grid container spacing={3}>
@@ -327,15 +339,7 @@ const NewRecipe = (props) => {
                   value={recipeData.tags}
                 />
 
-                <div className={classes.fileInput}>
-                  <FileBase
-                    type="file"
-                    multiple={false}
-                    onDone={({ base64 }) =>
-                      setRecipeData({ ...recipeData, image: base64 })
-                    }
-                  />
-                </div>
+                <input type="file" name="image" onChange={setImageHandler} />
 
                 <Button
                   type="submit"

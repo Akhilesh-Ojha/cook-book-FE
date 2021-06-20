@@ -199,7 +199,7 @@ const Home = () => {
             {!isLoading &&
               recipes?.map((tile) => (
                 <GridListTile key={tile._id}>
-                  <img src={tile.image} alt={tile.title} />
+                  <img src={tile.image.url} alt={tile.title} />
                   <Link to={`recipes/${tile._id}`}>
                     <GridListTileBar
                       title={tile.name}
